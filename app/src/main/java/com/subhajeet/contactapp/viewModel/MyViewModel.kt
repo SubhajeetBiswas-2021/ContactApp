@@ -39,5 +39,11 @@ class MyViewModel  @Inject constructor(private val database: ContactDatabase): V
         }
     }
 
+    fun deleteContact(contact: Contact){
+        viewModelScope.launch(Dispatchers.IO){
+            database.getDao().deleteContact(contact)
+        }
+    }
+
 
 }
