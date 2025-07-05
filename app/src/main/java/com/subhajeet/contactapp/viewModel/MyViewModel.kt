@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.subhajeet.contactapp.model.database.Contact
 import com.subhajeet.contactapp.model.database.ContactDatabase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+@HiltViewModel
 class MyViewModel  @Inject constructor(private val database: ContactDatabase): ViewModel() {
 
     private val _getContacts = MutableStateFlow<List<Contact>>(emptyList())  //made a state
