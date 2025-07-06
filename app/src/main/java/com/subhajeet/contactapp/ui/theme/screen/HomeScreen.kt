@@ -1,5 +1,6 @@
 package com.subhajeet.contactapp.ui.theme.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -20,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
+import com.subhajeet.contactapp.model.database.Contact
 import com.subhajeet.contactapp.ui.theme.screen.nav.Routes
 import com.subhajeet.contactapp.viewModel.MyViewModel
 
@@ -50,7 +55,9 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
         innerPadding ->
 
         Column(
-            modifier=Modifier.fillMaxSize().padding(innerPadding),
+            modifier= Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -63,19 +70,58 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
 
                     items(contactState.value){
 
+                       eachCard(
+                           contact = it,
+                           onDelete = {
+                               viewModel.deleteContact(it)
+                           },
+                           onClick = {
+                                navController.navigate(Routes.AddContact(
+                                    name = it.name,
+                                    phoneNumber = it.phoneNumber,
+                                    email = it.email,
+                                    id=it.id
+                                ))
+                           }
+                       )
 
-                        Column(modifier = Modifier.fillMaxSize().padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center) {
-                            Text(text=it.name)
-                            Text(text=it.phoneNumber)
-                            Text(text= it.email)
-                        }
+
+
                     }
                 }
             }
 
 
+        }
+    }
+}
+
+@Composable
+fun eachCard(contact: Contact,onDelete:() -> Unit, onClick:()-> Unit) {
+    Card(modifier = Modifier.clickable {
+        onClick()
+    }){
+
+        AsyncImage(
+            model=contact.image,
+            contentDescription = "Contact Image"
+        )
+
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+            ) {
+
+
+            Text(text=contact.name)
+            Text(text=contact.phoneNumber)
+            Text(text= contact.email)
+
+            Button(
+                onClick=onDelete
+            ) {
+                Text(text="Delete Contact")
+            }
         }
     }
 }
