@@ -19,5 +19,6 @@ interface Dao {
     @Query("SELECT * FROM contact_table ORDER BY name ASC")         //for Read purpose
     fun getAllContacts():Flow<List<Contact>>   //give it in list of contacts
 
-
+    @Query("SELECT * FROM contact_table WHERE id = :id LIMIT 1")
+    fun getContactById(id: Int): Contact?
 }
