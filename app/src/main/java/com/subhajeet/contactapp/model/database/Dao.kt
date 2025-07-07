@@ -17,5 +17,7 @@ interface Dao {
     suspend fun deleteContact(contact: Contact)
 
     @Query("SELECT * FROM contact_table ORDER BY name ASC")         //for Read purpose
-    suspend fun getAllContacts():Flow<List<Contact>>   //give it in list of contacts
+    fun getAllContacts():Flow<List<Contact>>   //give it in list of contacts
+
+
 }
