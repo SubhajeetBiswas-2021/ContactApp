@@ -1,8 +1,9 @@
 package com.subhajeet.contactapp.model.database
 
 import androidx.room.Database
+import androidx.room.RoomDatabase
 
-@Database(entities = [Contact::class], version = 1, exportSchema = true)
-abstract class ContactDatabase {         //since abstract room will make the body of this we will not give
+@Database(entities = [Contact::class], version = 2, exportSchema = true)
+abstract class ContactDatabase : RoomDatabase() {         //since abstract room will make the body of this we will not give and is extended with roomdatabase as the class is going to be functional for roomdatabase
     abstract fun getDao():Dao
 }
