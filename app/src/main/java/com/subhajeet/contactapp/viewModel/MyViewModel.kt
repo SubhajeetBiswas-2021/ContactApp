@@ -28,15 +28,42 @@ class MyViewModel  @Inject constructor(private val database: ContactDatabase): V
         }
     }
 
-    fun addContacts(name:String,phoneNumber:String,email:String,image:ByteArray?= null){
+    fun addContacts(name:String,phoneNumber:String,email:String,image:ByteArray?= null,id:Int?= null){
 
-        val contact = Contact(
+        /*val contact = Contact(
             name=name,
             phoneNumber = phoneNumber,
             email = email,
-            image = image
-        )
+            image = image,
+            id= id ?: 0
+        )*/
+       /* val finalImage = if ((image == null) && (id != null && id != 0)) {
+            // Fetch existing image from DB if updating and image is not selected
+            database.getDao().getContactById(id)?.image
+        } else image
+
+        val contact = if (id != null && id != 0) {
+            Contact(id = id, name = name, phoneNumber = phoneNumber, email = email, image = finalImage)
+        } else {
+            Contact(name = name, phoneNumber = phoneNumber, email = email, image = finalImage)
+        }
+
         viewModelScope.launch(Dispatchers.IO){
+            database.getDao().upsetContact(contact)
+        }*/
+        viewModelScope.launch(Dispatchers.IO) {
+            val finalImage = if (image == null && id != null && id != 0) {
+                database.getDao().getContactById(id)?.image
+            } else {
+                image
+            }
+
+            val contact = if (id != null && id != 0) {
+                Contact(id = id, name = name, phoneNumber = phoneNumber, email = email, image = finalImage)
+            } else {
+                Contact(name = name, phoneNumber = phoneNumber, email = email, image = finalImage)
+            }
+
             database.getDao().upsetContact(contact)
         }
     }
