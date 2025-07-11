@@ -1,37 +1,85 @@
 package com.subhajeet.contactapp.ui.theme.screen
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarColors
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import com.subhajeet.contactapp.R
 import com.subhajeet.contactapp.model.database.Contact
 import com.subhajeet.contactapp.ui.theme.screen.nav.Routes
 import com.subhajeet.contactapp.viewModel.MyViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavController) {
 
     val contactState = viewModel.getContacts.collectAsState()
+
+    var query by rememberSaveable { mutableStateOf("") }
+
+    var active by remember { mutableStateOf(false) } // Active state for SearchBar
+
+    val filteredContacts = contactState.value.filter {
+        it.name.contains(query, ignoreCase = true) ||
+                it.phoneNumber.contains(query)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.getAllContacts()
@@ -41,7 +89,12 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
         floatingActionButton = {
             IconButton(
                 onClick = {
-                    navController.navigate(Routes.AddContact)
+                    navController.navigate(Routes.AddContact(
+                        name = "",
+                        phoneNumber = "",
+                        email = "",
+                        id=null
+                    ))
                 }
             ){
                 Icon(
@@ -59,17 +112,72 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                 .fillMaxSize()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
 
-            if(contactState.value.isEmpty()){
+            if(filteredContacts.isEmpty()){
                 Text(text="No Contacts Available", modifier = Modifier.padding(16.dp))
             }else{
 
+                SearchBar(modifier = Modifier.fillMaxWidth(),
+                    query = query,
+                    onQueryChange = {
+                        query = it
+                    },
+                    onSearch = {
+                     //   active = false
+                    },
+                    active = active,
+                    onActiveChange = {
+                        active = it
+                    },
+                    placeholder = {
+                        Text(text = "Enter your query")
+                    },
+                    trailingIcon = {
+                        if (active) {
+                            Icon(
+                                modifier = Modifier.clickable {
+                                    if (query.isNotEmpty()) {
+                                        query = ""
+                                    } else {
+                                        active = false
+                                    }
+                                },
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close icon"
+                            )
+                        }
+                    }) {
+                    // Add any content inside to prevent collapsing
+                    if (filteredContacts.isEmpty()) {
+                        Text(
+                            text = "No matching contacts",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        LazyColumn {
+                            items(filteredContacts) {
+                                Text(
+                                    text = it.name,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            query = it.name
+                                            active = false
+                                        }
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
                 LazyColumn {
 
-                    items(contactState.value){
+                //    items(contactState.value){
 
+                    items(filteredContacts ){
                        eachCard(
                            contact = it,
                            onDelete = {
@@ -98,30 +206,81 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
 
 @Composable
 fun eachCard(contact: Contact,onDelete:() -> Unit, onClick:()-> Unit) {
-    Card(modifier = Modifier.clickable {
+    Card(modifier = Modifier.fillMaxWidth().padding(8.dp).clickable {
         onClick()
-    }){
+    }) {
 
-        AsyncImage(
-            model=contact.image,
-            contentDescription = "Contact Image"
-        )
-
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-            ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
 
 
-            Text(text=contact.name)
-            Text(text=contact.phoneNumber)
-            Text(text= contact.email)
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
 
-            Button(
-                onClick=onDelete
-            ) {
-                Text(text="Delete Contact")
+                val imageModel = if (contact.image != null) {
+                    // Optional: write ByteArray to file or handle via ViewModel/Repo
+                    contact.image
+                } else {
+
+                    R.drawable.person
+                }
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = "Contact Image",
+                    modifier = Modifier.size(100.dp).clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Column(
+                    modifier = Modifier
+
+                        .padding(16.dp),
+                ) {
+
+
+                    Text(text = contact.name, fontSize = 20.sp, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold )
+                    Text(text = contact.phoneNumber)
+                    Text(text = contact.email)
+
+                    Button(
+                        onClick = onDelete
+                    ) {
+                        Text(text = "Delete Contact")
+                    }
+                }
+
+
+
+
             }
+
+            // 📞 Phone Icon at Top Right
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                val context = LocalContext.current
+                IconButton(
+                    onClick = { /* handle call logic here */
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:${contact.phoneNumber}")
+                        }
+                        context.startActivity(intent)},
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp).clip(CircleShape).border(2.dp, Color.Gray, CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = "Phone Call",
+                        tint= Color.Green
+                    )
+                }
+            }
+
+
         }
     }
 }
+
+
