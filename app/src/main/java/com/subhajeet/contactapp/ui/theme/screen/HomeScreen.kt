@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -72,24 +73,27 @@ import com.subhajeet.contactapp.viewModel.MyViewModel
 fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavController) {
 
     val contactState = viewModel.getContacts.collectAsState()
+    val originalContacts = contactState.value
 
     var query by rememberSaveable { mutableStateOf("") }
 
     var active by remember { mutableStateOf(false) } // Active state for SearchBar
 
+    var searching by rememberSaveable { mutableStateOf(false) }  //very imaportant here for controlling the backbutton
 
     // Handle back button when search bar is active
-    if (active) {
-        BackHandler {
-            active = false
-            query = ""
-        }
+    BackHandler(enabled = active || searching) {
+        active = false
+        query = ""
+        searching = false
     }
 
-    val filteredContacts = contactState.value.filter {
+
+    val filteredContacts = remember(originalContacts, query){ originalContacts.filter {
         it.name.contains(query, ignoreCase = true) ||
                 it.phoneNumber.contains(query)
     }
+}
 
     LaunchedEffect(Unit) {
         viewModel.getAllContacts()
@@ -140,6 +144,7 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                     active = active,
                     onActiveChange = {
                         active = it
+                        searching = it || query.isNotEmpty()
                     },
                     placeholder = {
                         Text(text = "Enter your query")
@@ -152,6 +157,7 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                                         query = ""
                                     } else {
                                         active = false
+                                        searching = false
                                     }
                                 },
                                 imageVector = Icons.Default.Close,
@@ -159,7 +165,7 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                             )
                         }
                     }) {
-                    // Add any content inside to prevent collapsing
+                /*    // Add any content inside to prevent collapsing
                     if (filteredContacts.isEmpty()) {
                         Text(
                             text = if (query.isEmpty()) "No contacts available." else "No contact found by this name.",
@@ -182,10 +188,36 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                                 )
                             }
                         }
+                    } */
+                    // optional suggestion list (when active)
+                    if (active && filteredContacts.isNotEmpty()) {
+                        LazyColumn {
+                            items(filteredContacts) { contact ->
+                                Text(
+                                    text = contact.name,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            query = contact.name
+                                            active = false
+                                            searching = true  // <-- add this line
+                                        }
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
+
+                    } else if (active && filteredContacts.isEmpty()) {
+                        Text(
+                            text = "No contact found by this name.",
+                            modifier = Modifier.padding(16.dp)
+                        )
                     }
                 }
 
-                LazyColumn {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                /*LazyColumn {
 
                 //    items(contactState.value){
 
@@ -207,6 +239,38 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
 
 
 
+                    }
+                }*/
+
+                // 📋 Show filtered contacts or empty state
+                if (filteredContacts.isEmpty() && query.isNotEmpty()) {
+                    Text(
+                        text = "No contact found by this name.",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                } else if (filteredContacts.isEmpty()) {
+                    Text(
+                        text = "No contacts available.",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                } else {
+                    LazyColumn {
+                        items(filteredContacts) { contact ->
+                            eachCard(
+                                contact = contact,
+                                onDelete = { viewModel.deleteContact(contact) },
+                                onClick = {
+                                    navController.navigate(
+                                        Routes.AddContact(
+                                            name = contact.name,
+                                            phoneNumber = contact.phoneNumber,
+                                            email = contact.email,
+                                            id = contact.id
+                                        )
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
