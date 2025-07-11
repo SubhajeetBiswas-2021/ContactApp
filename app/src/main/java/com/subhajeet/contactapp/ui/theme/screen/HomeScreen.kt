@@ -2,6 +2,7 @@ package com.subhajeet.contactapp.ui.theme.screen
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -75,6 +76,15 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
     var query by rememberSaveable { mutableStateOf("") }
 
     var active by remember { mutableStateOf(false) } // Active state for SearchBar
+
+
+    // Handle back button when search bar is active
+    if (active) {
+        BackHandler {
+            active = false
+            query = ""
+        }
+    }
 
     val filteredContacts = contactState.value.filter {
         it.name.contains(query, ignoreCase = true) ||
