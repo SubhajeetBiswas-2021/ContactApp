@@ -133,7 +133,7 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                 Text(text="No Contacts Available", modifier = Modifier.padding(16.dp))
             }else{
 
-                SearchBar(modifier = Modifier.fillMaxWidth(),
+                SearchBar(modifier = Modifier.fillMaxWidth().padding(0.dp,25.dp,0.dp,0.dp),
                     query = query,
                     onQueryChange = {
                         query = it
