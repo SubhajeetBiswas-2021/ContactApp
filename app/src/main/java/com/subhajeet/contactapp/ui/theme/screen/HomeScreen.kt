@@ -147,7 +147,7 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                         searching = it || query.isNotEmpty()
                     },
                     placeholder = {
-                        Text(text = "Enter your query")
+                        Text(text = "Search contacts")
                     },
                     trailingIcon = {
                         if (active) {
