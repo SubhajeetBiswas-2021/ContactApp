@@ -162,8 +162,10 @@ fun HomeScreen(viewModel: MyViewModel = hiltViewModel(), navController: NavContr
                     // Add any content inside to prevent collapsing
                     if (filteredContacts.isEmpty()) {
                         Text(
-                            text = "No matching contacts",
-                            modifier = Modifier.padding(16.dp)
+                            text = if (query.isEmpty()) "No contacts available." else "No contact found by this name.",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(top = 40.dp)
                         )
                     } else {
                         LazyColumn {
