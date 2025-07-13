@@ -3,14 +3,16 @@ package com.subhajeet.contactapp.ui.theme.screen
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -22,23 +24,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-
 import com.subhajeet.contactapp.viewModel.MyViewModel
 
 
 @Composable
-fun AddContact(viewModel: MyViewModel?= hiltViewModel(), navController: NavController?) {
+fun AddContact(viewModel: MyViewModel?= hiltViewModel(), navController: NavController?,name:String?=null,phoneNumber:String?=null,email:String?=null,id:Int?=null) {
 
-    val name = remember{ mutableStateOf("") }
-    val phoneNumber = remember{ mutableStateOf("") }
-    val email = remember{ mutableStateOf("") }
+    val name = remember{ mutableStateOf(name ?: "") }
+    val phoneNumber = remember{ mutableStateOf(phoneNumber ?: "") }
+    val email = remember{ mutableStateOf(email ?: "") }
     val image = remember { mutableStateOf<ByteArray?>(null) }//(1)
+    val id= remember { mutableStateOf(id) }
+    //val id= id
 
     val imageUri = remember { mutableStateOf<Uri?>(null) } //imageuri is the image path(2)
     val context = LocalContext.current
@@ -69,19 +74,22 @@ fun AddContact(viewModel: MyViewModel?= hiltViewModel(), navController: NavContr
             Text(text = "Select Image")
         }
 
-        if(imageUri != null){   //5
-            Image(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Selected Image",
-                modifier = Modifier.size(100.dp)
-            )
-        }else{
+        if(imageUri.value != null){   //5
             AsyncImage(
                 model=imageUri.value,
                 contentDescription = "Selected Image",
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(100.dp).clip(CircleShape).border(2.dp, Color.Gray, CircleShape)
+            )
+        }else{
+            Image(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Selected Image",
+                modifier = Modifier.size(100.dp).clip(CircleShape).border(2.dp, Color.Gray, CircleShape)
             )
         }
+
+
+        Spacer(modifier = Modifier.height(18.dp))
 
 
 
@@ -108,8 +116,10 @@ fun AddContact(viewModel: MyViewModel?= hiltViewModel(), navController: NavContr
             onValueChange = {
                 email.value=it
             },
-            label = { Text("email") }
+            label = { Text("Email") }
         )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         ElevatedButton(
             onClick = {
@@ -117,7 +127,9 @@ fun AddContact(viewModel: MyViewModel?= hiltViewModel(), navController: NavContr
                     name = name.value,
                     phoneNumber = phoneNumber.value,
                     email=email.value,
-                    image=image.value
+                    image=image.value,
+                    //id=id
+                     id=id.value
                 )
             }
         ) {
