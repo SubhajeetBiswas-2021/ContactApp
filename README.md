@@ -8,7 +8,7 @@ This app allows users to easily add, update, search, and manage contacts with a 
 
 🏠 𝐇𝐨𝐦𝐞 𝐒𝐜𝐫𝐞𝐞𝐧: Displays all saved contacts in a clean and scrollable list.
 
-➕ 𝐀𝐝𝐝 𝐂𝐨𝐧𝐭𝐚𝐜𝐭: Easily add new contacts with the floating action button (FAB).
+➕ 𝐀𝐝𝐝 𝐂𝐨𝐧𝐭𝐚𝐜𝐭: Easily add new contacts with the floating action button.
 
 🔍 𝐒𝐦𝐚𝐫𝐭 𝐒𝐞𝐚𝐫𝐜𝐡 𝐅𝐢𝐥𝐭𝐞𝐫: Search contacts instantly by name or phone number with edge-case handling.
 
